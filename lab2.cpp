@@ -93,7 +93,7 @@ double cpp_eval(std::string& input) {
 					st.pop();
 				}
 
-				if (!st.empty() && (__Priority(st.top()) < __Priority(c))) {
+				if (st.empty() || (__Priority(st.top()) < __Priority(c))) {
 					st.push(c);
 					continue;
 				}
