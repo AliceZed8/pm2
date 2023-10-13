@@ -136,46 +136,42 @@ double cpp_eval(std::string& input) {
 		st.pop();
 	}
 
-	std::cout << output << std::endl;
+	std::cout << "ОПЗ: " << output << std::endl;
 	std::stringstream stream(output);
 	std::stack<double> nums;
-	double num1, num2, result;
+	double num1, num2;
 
 	std::string buf;
-	try {
-		while (!stream.eof()) {
-			stream >> buf;
 
-			if (__isDigit(buf[0])) {
-				nums.push(atof(buf.c_str()));
-				buf.clear();
-				continue;
+	while (!stream.eof()) {
+		stream >> buf;
+
+		if (__isDigit(buf[0])) {
+			nums.push(atof(buf.c_str()));
+			buf.clear();
+			continue;
+		}
+
+		if (__isOperator(buf[0])) {
+			if (nums.size() < 2) throw std::exception("Ошибка 1");
+
+			num1 = nums.top();
+			nums.pop();
+			num2 = nums.top();
+			nums.pop();
+
+			if (buf[0] == '+') nums.push(num1 + num2);
+			if (buf[0] == '-') nums.push(num2 - num1);
+			if (buf[0] == '*') nums.push(num2 * num1);
+			if (buf[0] == '/') {
+				if (num1 == 0) throw std::exception("Деление на ноль!!!");
+				nums.push(num2 / num1);
 			}
-
-			if (__isOperator(buf[0])) {
-				if (nums.size() < 2) throw std::exception("Ошибка 1");
-
-				num1 = nums.top();
-				nums.pop();
-				num2 = nums.top();
-				nums.pop();
-
-				if (buf[0] == '+') nums.push(num1 + num2);
-				if (buf[0] == '-') nums.push(num2 - num1);
-				if (buf[0] == '*') nums.push(num2 * num1);
-				if (buf[0] == '/') {
-					if (num1 == 0) throw std::exception("Деление на ноль!!!");
-					nums.push(num2 / num1);
-				}
-				buf.clear();
-			}
+			buf.clear();
 		}
 	}
-	catch (const std::exception& e) { throw; }
 
-	if (nums.size() != 1) {
-		throw std::exception("Ошибка 1");
-	}
+	if (nums.size() != 1) throw std::exception("Ошибка 1");
 
 	return nums.top();
 
@@ -184,17 +180,14 @@ double cpp_eval(std::string& input) {
 
 int main() {
 	setlocale(LC_ALL, "RUS");
-	
 	std::string ex;
 	double res;
-
 	while (true)
 	{
 		std::cout << "Введите выражение: " ;
 		std::getline(std::cin, ex);
 
 		if (ex == "exit") return 0;
-
 		try
 		{
 			res = cpp_eval(ex);
