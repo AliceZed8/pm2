@@ -1,16 +1,26 @@
 #include <iostream>
 #include <stack>
+#include <sstream>
 #include <vector>
 
 namespace SomeCalc {
 
-	bool check_brackets(const std::string& str) {
-		size_t count = 0;
+	bool check_brackets(std::string& str) {
+		std::stack<char> brackets;
 		for (char c : str) {
-			if (c == '(') { count++; continue; }
-			if (c == ')') count--;
+			if (c == '(' || c == '[' || c == '{') {
+				brackets.push(c);
+				continue;
+			}
+			if (c == ')' || c == ']' || c == '}') {
+				if (brackets.empty()) return false;
+				if (c == ']' && brackets.top() != '[') return false;
+				if (c == ')' && brackets.top() != '(') return false;
+				if (c == '}' && brackets.top() != '{') return false;
+				brackets.pop();
+			}
 		}
-		return count == 0 ? true : false;
+		return brackets.empty() ? true : false;
 	}
 
 	bool is_digit(char c) {
@@ -24,9 +34,6 @@ namespace SomeCalc {
 	int op_priority(char c) {
 		switch (c)
 		{
-		case '(':
-		case ')': return 0;
-
 		case '+':
 		case '-': return 1;
 
@@ -34,6 +41,9 @@ namespace SomeCalc {
 		case '/': return 2;
 
 		case '~': return 3;
+
+
+		default: return 0;
 		}
 	}
 
@@ -61,18 +71,22 @@ namespace SomeCalc {
 		}
 	}
 
-
 	double eval(std::string& input) {
+
 		bool NUM_READ = false;
 		std::stack<double> nums;
 		std::stack<char> ops;
 		std::string operand;
 
+		if (input.empty()) throw std::exception("eval: пустая строка");
 		if (!check_brackets(input)) throw std::exception("eval: cкобки расставлены неверно");
 
 
 
 		for (char& c : input) {
+			if (!isdigit(c) && !is_operator(c) && (c != '(') && (c != ')') && (c != ' '))
+				throw std::exception("eval: в строке лишние символы");
+
 			if (is_digit(c)) {
 				if (!NUM_READ) NUM_READ = true;
 				operand.push_back(c);
@@ -115,10 +129,11 @@ namespace SomeCalc {
 			proccess_operation(nums, ops.top());
 			ops.pop();
 		}
-
 		return nums.top();
 	}
 }
+
+
 int main() {
 	setlocale(LC_ALL, "RUS");
 	std::string ex;
