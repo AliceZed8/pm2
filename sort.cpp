@@ -11,145 +11,117 @@ void print_arr(const std::vector<T> arr) {
     std::cout << "}" << std::endl;
 }
 
-template <typename T>
-void combSort( std::vector <T>& arr) {
-    size_t n = arr.size();
-    size_t step = n;
-    bool swp = true;
 
-    while (step != 1 || swp) {
-        step /= 1.247;
-        if (step < 1) step = 1;
 
-        swp = false;
 
-        for (int i = 0; i + step < n; ++i) {
-            if (arr[i] > arr[i + step]) {
-                std::swap(arr[i], arr[i + step]);
-                swp = true;
-            }
-        }
-    }
-}
 
-template <typename T>
-void insertionSort(std::vector<T> & arr) {
-    size_t n = arr.size();
-    for (size_t i = 1; i < n; ++i) {
-        size_t key = arr[i];
-        size_t j = i - 1;
+/*
+    arr = {10, 5, 9, 1, 3, 2, 11, 9, 4, 1, 8}
+    Куча
+                         10 [0]
+              5 [1]                    9 [2]
+       1 [3]         3 [4]       2 [5]     11 [6]
+  9 [7]   4 [8]  1 [9]   8 [10]    
 
-        while (j >= 0 && arr[j] > key) {
-            arr[j + 1] = arr[j];
-            j--;
-        }
+  Если i-ый элемент корень кучи (или "под-кучи") то:
+  Левый дочерний элемент - с индексом 2i + 1
+  Правый дочерний элемент - с индексом 2i + 2
 
-        arr[j + 1] = key;
-    }
-}
+  n/2 - 1 = 4 
+  1) arr = {10, 5, 9, 1, *3, 2, 11, 9, 4, _1, _8}
+  2) arr = {10, 5, 9, *1, 8, 2, 11, _9, _4, 1, 3}
+  3) arr = {10, 5, *9, 9, 8, _2, _11, 1, 4, 1, 3}
+  4) arr = {10, *5, 11, _9, _8, 2, 9, 1, 4, 1, 3}
+  5) arr = {10, 9, 11, *5, 8, 2, 9, _1, _4, 1, 3}
+  6) arr = {*10, _9, _11, 5, 8, 2, 9, 1, 4, 1, 3}
+  7) arr = {11, 9, *10, 5, 8, _2, _9, 1, 4, 1, 3}
 
-template <typename T>
-void selectionSort(std::vector<T> & arr) {
-    size_t n = arr.size();
+*/
+
+
+/*
+     Макс кол-во рекурсий log(n)
+*/
+
+template<typename T>
+void heapify(std::vector<T>& arr, int64_t i, int64_t n) {
     
-    for (size_t i = 0; i < n - 1; ++i) {
-        size_t minIndex = i;
+    int64_t left_i = 2*i + 1;
+    int64_t right_i = 2*i + 2;
+    int64_t largest_i = i;
 
-        for (size_t j = i + 1; j < n; ++j) {
-            if (arr[j] < arr[minIndex]) minIndex = j;
-        }
+    if ((left_i < n) && (arr[left_i] > arr[largest_i])) 
+        largest_i = left_i;
 
-        if (minIndex != i) 
-            std::swap(arr[i], arr[minIndex]);
+    if ((right_i < n) && (arr[right_i] > arr[largest_i])) 
+        largest_i = right_i;
+
+    if (largest_i != i) {
+        std::swap(arr[i], arr[largest_i]);
+        heapify(arr, largest_i, n);
     }
+
 }
 
 
-template <typename T>
-void radixSort(std::vector<T>& arr) {
-    // O(кол-во разрядов * (n + 10)) 
-    T Max = arr[0];
-    for (int i = 0; i < arr.size(); ++i) {
-        if (arr[i] > Max) Max = arr[i];
-    }
-
-
-    size_t n = arr.size();
-    T* out = new T[n]; //mem  O(n+k) ~ O(n)
-    for (int del = 1; Max / del > 0; del *= 10) {
-        int count[10] = { 0 };
-        for (int i = 0; i < n; i++)
-            count[(arr[i] / del) % 10]++;
-        
-        for (int i = 1; i < 10; i++)
-            count[i] += count[i - 1];
-
-        for (int i = n - 1; i >= 0; i--) {
-            out[count[(arr[i] / del) % 10] - 1] = arr[i];
-            count[(arr[i] / del) % 10]--;
-        }
-
-        std::copy(out, out + arr.size(), arr.begin());
-    }
-
-    delete[] out;
-
-}
-
-template <typename T>
-void merge(std::vector<T> & arr, size_t left, size_t middle, size_t right) {
-    size_t n1 = middle - left + 1;
-    size_t n2 = right - middle;
-
-
-    T* L = new T[n1];
-    T* R = new T[n2];
+template<typename T>
+void heap_sort(std::vector<T>& arr) {
     
-    std::memcpy(L, arr.data() + left, sizeof(T) * n1);
-    std::memcpy(R, arr.data() + middle + 1, sizeof(T) * n2);
+    //Строим кучу (самый большой элемент станет корнем i = 0)
+    // (0.5 * n) * log(n)
+    int64_t n = arr.size();
+    for (int64_t i = (n / 2) - 1; i >= 0; i--)
+        heapify(arr, i, n);
 
-    size_t i = 0, j = 0, k = left;
-    while (i < n1 && j < n2) {
-        if (L[i] <= R[j]) {
-            arr[k] = L[i];
-            i++;
+    
+    // n * log(n)
+    for (int64_t i = n - 1; i >= 0; i--) {
+        std::swap(arr[0], arr[i]); //перемещаем корень
+        heapify(arr, 0, i); // Преобразуем уменьшенную кучу
+    }
+
+    // Общая сложность O (1.5 * n * log(n)) ~ O (n*log(n))
+
+}
+
+template <typename T>
+void MergeSort1(std::vector<T>& arr, std::vector<T>& buffer, uint64_t l, uint64_t r) {
+    if (r - l < 1) return;
+    if (r - l == 1) {
+        if (arr[l] > arr[l + 1]) std::swap(arr[l], arr[l + 1]);
+        return;
+    }
+    
+    
+    
+    uint64_t m = (l + r) / 2;
+    MergeSort1(arr, buffer, l, m);
+    MergeSort1(arr, buffer, m + 1, r);
+
+    uint64_t k = l;
+    for (uint64_t i = l, j = m + 1; i <= m || j <= r; ) {
+        if (j > r || (i <= m && arr[i] < arr[j])) {
+            buffer[k] = arr[i];
+            ++i;
         }
         else {
-            arr[k] = R[j];
-            j++;
+            buffer[k] = arr[j];
+            ++j;
         }
-        k++;
+
+        ++k;
     }
 
-    while (i < n1) {
-        arr[k] = L[i];
-        i++;
-        k++;
-    }
-
-    while (j < n2) {
-        arr[k] = R[j];
-        j++;
-        k++;
-    }
-    delete[] L, R;
+    std::memcpy(arr.data() + l, buffer.data() + l, (r - l + 1) * sizeof(T));
 }
 
 template <typename T>
-void mergeSort(std::vector<T> & arr, size_t left, size_t right) {
-    if (left < right) {
-        size_t middle = left + (right - left) / 2;
-
-        mergeSort(arr, left, middle);
-        mergeSort(arr, middle + 1, right);
-
-        merge(arr, left, middle, right);
+void merge_sort(std::vector<T>& arr) {
+    if (!arr.empty()) {
+        std::vector<T> buffer(arr.size());
+        MergeSort1(arr, buffer, 0, arr.size() - 1);
     }
 }
-
-
-
-
 
 
 int main()
@@ -157,19 +129,18 @@ int main()
     std::setlocale(LC_ALL, "RU");
     srand(std::time(0));
     std::vector<int> v ;
-    std::vector<int> vv = {
-        9, 2, 5, 1, 6, 8, 1
-    };
+
     for (int i = 0; i < 20; ++i) {
-        v.push_back(rand() % 1000);
+        v.push_back(i);
+    }
+    for (int i = 0; i < 20; ++i) {
+        std::swap(v[i], v[rand() % (v.size() - 1)]);
     }
     std::cout << "До сортировки" << std::endl;
     print_arr(v);
-    //combSort(v);
-    //insertionSort(v);
-    //selectionSort(v);
-    //radixSort(vv);
-    mergeSort(v, 0, v.size() - 1);
+    //heap_sort(v);
+    
+    merge_sort(v);
 
     std::cout << "После сортировки" << std::endl;
     print_arr(v);
