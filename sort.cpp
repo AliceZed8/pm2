@@ -12,7 +12,82 @@ void print_arr(const std::vector<T> arr) {
 }
 
 
+/*
+    Дан массив arr = [4, 9, 7, 6, 2, 3, 8]
+    Пусть p опорный элемент
 
+    p = arr[ (r + l) / 2 ]
+
+    i                 j
+    4, 9, 7, 6, 2, 3, 8
+    l        ^        r
+
+    Инкрементируем i пока не найдем элемент больше опорного.
+    Декрементируем j пока не найдем элемент меньше опорного.
+
+       i           j
+    4, 9, 7, 6, 2, 3, 8                 Плохой случай
+    l        ^        r             
+                                    i                  j
+          i     j                   4, 9, 7, 50, 2, 3, 30
+    4, 3, 7, 6, 2, 9, 8             l        ^         r
+    l        ^        r             
+                                              i        j
+                                    4, 9, 7, 50, 2, 3, 30
+             j                      l                  r
+             i                                   i  j
+    4, 3, 2, 6, 7, 9, 8             4, 9, 7, 30, 2, 3, 50
+    l        ^        r             l                  r
+                                                    j   i 
+                                    4, 9, 7, 30, 2, 3, 50
+                                    l                  r
+             
+          j     i
+    4, 3, 2, 6, 7, 9, 8                        Пусть длина N
+    l        ^        r          
+                                                     N
+    i     j       i     j                     N/2         N/2
+    4, 3, 2       7, 9, 8                 N/4     N/4  N/4   N/4
+    l  ^  r       l  ^  r
+                                            Уровней log(N). 
+                                    На каждом уровне располагаем элементы меньше опорного 
+    j  p  i          i  j           в левой части, а элементы больше опорного в правой.
+    2, 3, 4       7, 9, 8           За O(N)
+    l     r       l     r
+                    
+                     j  i
+                  7, 8, 9
+
+*/
+
+template <typename T>
+void qq_sort(std::vector<T>& arr, int l, int r) {
+    if (l >= r) return;
+
+    int i = l, j = r;
+    T middle = arr[(l + r) / 2];
+
+
+    while (i <= j) {
+        while (arr[i] < middle) i++;
+        while (middle < arr[j]) j--;
+
+        if (i <= j) {
+            std::swap(arr[i], arr[j]);
+            i++; j--;
+        }
+    }
+
+
+    qq_sort(arr, l, j);
+    qq_sort(arr, i, r);
+
+}
+
+template <typename T>
+void q_sort(std::vector<T>& arr) {
+    qq_sort(arr, 0, arr.size() - 1);
+}
 
 
 /*
